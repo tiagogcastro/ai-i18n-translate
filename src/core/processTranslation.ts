@@ -12,7 +12,7 @@ export async function processTranslation({
   model,
   context,
   OPENAI_API_KEY,
-  translateChunk, // optional: allows custom AI function
+  translateChunk,
 }: ProcessTranslationRequest & { translateChunk?: TranslateChunkFunction }): Promise<ProcessTranslationResult> {
   let aiRequests = 0;
   let keysAdded = 0;
@@ -25,7 +25,6 @@ export async function processTranslation({
     targetJSON = await fs.readJson(targetFilePath);
   }
 
-  // Remove keys that are no longer in the base
   Object.keys(targetJSON).forEach((key) => {
     if (!(key in baseJSON)) {
       delete targetJSON[key];
@@ -44,7 +43,6 @@ export async function processTranslation({
       chunkObject[key] = baseJSON[key];
     });
 
-    // Use the user-provided translateChunk function if available
     const translateFn = translateChunk ?? openAITranslateChunk;
 
     const translated = await translateFn({
@@ -59,16 +57,13 @@ export async function processTranslation({
     aiRequests++;
     keysAdded += chunkKeys.length;
 
-    // Update target JSON
     Object.assign(targetJSON, translated);
   }
 
-  // fallback for any missing keys
   Object.keys(baseJSON).forEach((key) => {
     if (!(key in targetJSON)) targetJSON[key] = baseJSON[key];
   });
 
-  // maintain baseJSON order
   const orderedJSON: Record<string, string> = {};
   Object.keys(baseJSON).forEach((key) => {
     orderedJSON[key] = targetJSON[key];

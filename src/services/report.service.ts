@@ -3,9 +3,9 @@ import fs from "fs-extra";
 
 export const generateSummaryMarkdown = (summary: TranslationSummary) => {
   let detailsSection = `
-## 📝 Detalhes por Arquivo
+## 📝 File Details
 
-*Baseado nos arquivos do diretório \`${summary.baseLocale}/\`*
+*Based on files in the directory \`${summary.baseLocale}/\`*
 `;
 
   for (const fileName of Object.keys(summary.details)) {
@@ -14,13 +14,13 @@ export const generateSummaryMarkdown = (summary: TranslationSummary) => {
     const baseTotal =
       entries.length > 0 ? entries[0].baseTotal : 0;
 
-    detailsSection += `\n### 📄 ${fileName} (${baseTotal} chaves)\n\n`;
+    detailsSection += `\n### 📄 ${fileName} (${baseTotal} keys)\n\n`;
 
     for (const entry of summary.details[fileName]) {
       let statusText = "";
 
       if (!entry.modified) {
-        statusText = "Já sincronizado";
+        statusText = "Already synced";
       } else {
         const additions =
           entry.keysAdded > 0 ? `+${entry.keysAdded}` : "";
@@ -28,9 +28,9 @@ export const generateSummaryMarkdown = (summary: TranslationSummary) => {
           entry.keysRemoved > 0 ? `-${entry.keysRemoved}` : "";
 
         if (additions && removals) {
-          statusText = `Atualizado (${additions} / ${removals})`;
+          statusText = `Updated (${additions} / ${removals})`;
         } else {
-          statusText = `Atualizado (${additions}${removals})`;
+          statusText = `Updated (${additions}${removals})`;
         }
       }
 
@@ -38,28 +38,28 @@ export const generateSummaryMarkdown = (summary: TranslationSummary) => {
     }
   }
 
-  return `# Relatório de Tradução
+  return `# Translation Report
 
-**Última atualização:** ${summary.startedAt.toLocaleString()}
+**Last updated:** ${summary.startedAt.toLocaleString()}
 
-## ⚙️ Configuração
+## ⚙️ Configuration
 
-- **Idioma base:** ${summary.baseLocale}
-- **Caminho dos locales:** \`${summary.basePath}\`
-- **Modelo de IA usado:** \`${summary.model}\`
+- **Base language:** ${summary.baseLocale}
+- **Locales path:** \`${summary.basePath}\`
+- **AI model used:** \`${summary.model}\`
 - **Chunk size:** ${summary.chunkSize}
 
-## 📊 Estatísticas Gerais
+## 📊 General Statistics
 
-- **Arquivos base processados:** ${summary.totalBaseFiles}
-- **Locales processados:** ${summary.totalLocales}
-- **Total de arquivos processados:** ${summary.totalFilesProcessed}
-- **Uso da IA (chamadas):** ${summary.totalAIRequests}
-- **Arquivos modificados:** ${summary.totalModifiedFiles}
-- **Arquivos já sincronizados antes:** ${summary.totalSyncedFiles}
-- **Total de chaves adicionadas:** ${summary.totalKeysAdded}
-- **Total de chaves removidas:** ${summary.totalKeysRemoved}
-- **Tempo total de execução:** ${summary.executionTime}
+- **Base files processed:** ${summary.totalBaseFiles}
+- **Locales processed:** ${summary.totalLocales}
+- **Total files processed:** ${summary.totalFilesProcessed}
+- **AI usage (requests):** ${summary.totalAIRequests}
+- **Modified files:** ${summary.totalModifiedFiles}
+- **Files already synced before:** ${summary.totalSyncedFiles}
+- **Total keys added:** ${summary.totalKeysAdded}
+- **Total keys removed:** ${summary.totalKeysRemoved}
+- **Total execution time:** ${summary.executionTime}
 
 ${detailsSection}
 `;
