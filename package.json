@@ -1,5 +1,5 @@
 {
-  "name": "i18n-json-translator",
+  "name": "ai-i18n-translate",
   "version": "1.0.0",
   "description": "Uma biblioteca TypeScript para traduzir arquivos JSON de localização de forma automatizada, mantendo a estrutura e a ordem das chaves do idioma base usando IA.",
   "author": {
