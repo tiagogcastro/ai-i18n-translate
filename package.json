@@ -1,6 +1,6 @@
 {
   "name": "@tiagogcastro/ai-i18n-translate",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Uma biblioteca TypeScript para traduzir arquivos JSON de localização de forma automatizada, mantendo a estrutura e a ordem das chaves do idioma base usando IA.",
   "author": "Tiago Gonçalves de Castro <tiaguin180@gmail.com> (https://github.com/tiagogcastro)",
   "files": [
