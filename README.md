@@ -120,7 +120,7 @@ Example generic structure:
 ```ts
 import { TranslateChunkFunction, TranslateChunkRequest, runTranslation } from 'ai-i18n-translate';
 
-const translateChunkWithOtherAI: TranslateChunkFunction = async ({ texts, from, to, context }: TranslateChunkRequest) => {
+const translateChunkWithOtherAI: TranslateChunkFunction = async ({ texts, from, to, context, systemPrompt }: TranslateChunkRequest) => {
   // Call your AI provider here (Claude, Gemini, AWS Bedrock, etc.)
   // Apply the context and return a JSON object with the same keys
   return { ...texts }; // replace with actual translations
