@@ -2,6 +2,7 @@ import { openAITranslateChunk } from "@/services/openai/openai.service";
 import { ProcessTranslationRequest, ProcessTranslationResult, TranslateChunkFunction } from '@/types';
 import fs from "fs-extra";
 import path from "path";
+import { buildDefaultSystemPrompt } from './buildDefaultSystemPrompt';
 
 export async function processTranslation({
   baseJSON,
@@ -34,6 +35,12 @@ export async function processTranslation({
 
   const missingKeys = Object.keys(baseJSON).filter((key) => !(key in targetJSON));
 
+  const systemPrompt = buildDefaultSystemPrompt({
+    from: baseLocale,
+    to: targetLocale,
+    context,
+  });
+
   for (let i = 0; i < missingKeys.length; i += chunkSize) {
     const chunkKeys = missingKeys.slice(i, i + chunkSize);
     if (!chunkKeys.length) continue;
@@ -48,10 +55,11 @@ export async function processTranslation({
     const translated = await translateFn({
       model,
       texts: chunkObject,
+      systemPrompt,
+      OPENAI_API_KEY,
       from: baseLocale,
       to: targetLocale,
       context,
-      OPENAI_API_KEY,
     });
 
     aiRequests++;

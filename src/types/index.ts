@@ -66,8 +66,9 @@ export interface TranslateChunkRequest {
   texts: Record<string, string>;
   from: string;
   to: string;
-  context?: string;
   OPENAI_API_KEY?: string;
+  context?: string;
+  systemPrompt?: string;
 }
 
 export interface ProcessTranslationRequest {
