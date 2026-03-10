@@ -1,8 +1,13 @@
 import { openAITranslateChunk } from "@/services/openai/openai.service";
-import { ProcessTranslationRequest, ProcessTranslationResult, TranslateChunkFunction } from '@/types';
+import {
+  ProcessTranslationRequest,
+  ProcessTranslationResult,
+  TranslateChunkFunction
+} from "@/types";
+import { flattenJSON, unflattenJSON } from "@/utils/json.utils";
 import fs from "fs-extra";
 import path from "path";
-import { buildDefaultSystemPrompt } from './buildDefaultSystemPrompt';
+import { buildDefaultSystemPrompt } from "./buildDefaultSystemPrompt";
 
 export async function processTranslation({
   baseJSON,
@@ -14,34 +19,45 @@ export async function processTranslation({
   context,
   OPENAI_API_KEY,
   translateChunk,
-}: ProcessTranslationRequest & { translateChunk?: TranslateChunkFunction }): Promise<ProcessTranslationResult> {
+}: ProcessTranslationRequest & {
+  translateChunk?: TranslateChunkFunction;
+}): Promise<ProcessTranslationResult> {
+
   let aiRequests = 0;
   let keysAdded = 0;
   let keysRemoved = 0;
 
   await fs.ensureDir(path.dirname(targetFilePath));
 
-  let targetJSON: Record<string, string> = {};
+  const baseFlat = flattenJSON(baseJSON);
+
+  let targetJSON: any = {};
+  let targetFlat: Record<string, string> = {};
+
   if (await fs.pathExists(targetFilePath)) {
     targetJSON = await fs.readJson(targetFilePath);
+    targetFlat = flattenJSON(targetJSON);
   }
 
-  Object.keys(targetJSON).forEach((key) => {
-    if (!(key in baseJSON)) {
-      delete targetJSON[key];
+  // remove keys que não existem mais
+  Object.keys(targetFlat).forEach((key) => {
+    if (!(key in baseFlat)) {
+      delete targetFlat[key];
       keysRemoved++;
     }
   });
 
-  const missingKeys = Object.keys(baseJSON).filter((key) => !(key in targetJSON));
+  const missingKeys = Object.keys(baseFlat).filter(
+    (key) => !(key in targetFlat)
+  );
 
   for (let i = 0; i < missingKeys.length; i += chunkSize) {
     const chunkKeys = missingKeys.slice(i, i + chunkSize);
-    if (!chunkKeys.length) continue;
 
     const chunkObject: Record<string, string> = {};
+
     chunkKeys.forEach((key) => {
-      chunkObject[key] = baseJSON[key];
+      chunkObject[key] = baseFlat[key];
     });
 
     const systemPrompt = buildDefaultSystemPrompt({
@@ -67,21 +83,29 @@ export async function processTranslation({
     aiRequests++;
     keysAdded += chunkKeys.length;
 
-    Object.assign(targetJSON, translated);
+    Object.assign(targetFlat, translated);
   }
 
-  Object.keys(baseJSON).forEach((key) => {
-    if (!(key in targetJSON)) targetJSON[key] = baseJSON[key];
+  // garantir que todas as keys existem
+  Object.keys(baseFlat).forEach((key) => {
+    if (!(key in targetFlat)) {
+      targetFlat[key] = baseFlat[key];
+    }
   });
 
-  const orderedJSON: Record<string, string> = {};
-  Object.keys(baseJSON).forEach((key) => {
-    orderedJSON[key] = targetJSON[key];
+  const orderedFlat: Record<string, string> = {};
+
+  Object.keys(baseFlat).forEach((key) => {
+    orderedFlat[key] = targetFlat[key];
+  });
+
+  const finalJSON = unflattenJSON({
+    flat: orderedFlat,
   });
 
   await fs.writeFile(
     targetFilePath,
-    JSON.stringify(orderedJSON, null, 2)
+    JSON.stringify(finalJSON, null, 2)
   );
 
   return {
@@ -89,7 +113,7 @@ export async function processTranslation({
     keysAdded,
     keysRemoved,
     modified: keysAdded > 0 || keysRemoved > 0,
-    baseTotal: Object.keys(baseJSON).length,
-    finalTotal: Object.keys(orderedJSON).length,
+    baseTotal: Object.keys(baseFlat).length,
+    finalTotal: Object.keys(orderedFlat).length,
   };
 }

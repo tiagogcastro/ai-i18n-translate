@@ -9,6 +9,8 @@ export const openAITranslateChunk = async ({
 }: TranslateChunkRequest): Promise<Record<string, string>> => {
   const client = getOpenAIClient(OPENAI_API_KEY);
 
+  console.log(JSON.stringify(texts))
+
   const response = await client.chat.completions.create({
     model,
     temperature: 0,
